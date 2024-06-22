@@ -1,10 +1,9 @@
-"""User interface and main script to run the app."""
-from gc_calendar import (authenticate_google_calendar,
-                         get_events, list_calendars)
+"""Streamlit app for counting the number of lessons in a given month."""
 import streamlit as st
 from datetime import datetime
+from utils.gc_calendar import (authenticate_google_calendar,
+                               get_events, list_calendars)
 
-# config st page
 st.set_page_config(
     page_title="Lessons counter",
     page_icon=":calendar:",
@@ -18,17 +17,45 @@ with col1:
     st.write("This app will count the number of lessons in a given month.")
     service = authenticate_google_calendar()
     calendar_lists = list_calendars(service)
+
+    # Load calendar from session or set it
     st.write("### Select calendar:")
-    calendar_id = st.selectbox("Choose the calendar", calendar_lists)
+    if 'calendar_id' not in st.session_state:
+        calendar_id = st.selectbox("Choose the calendar", calendar_lists)
+        st.session_state['calendar_id'] = calendar_id
+    else:
+        calendar_id = st.selectbox("Choose the calendar",
+                                   calendar_lists,
+                                   index=calendar_lists.index(
+                                       st.session_state['calendar_id'])
+                                   )
+        st.session_state['calendar_id'] = calendar_id
     st.write("### Select month:")
-    month = st.selectbox("Choose the month", list(
-        range(1, 13)), index=datetime.now().month - 1)
+
+    # Load month from session or set it
+    if 'month' not in st.session_state:
+        month = st.selectbox("Choose the month", list(
+            range(1, 13)), index=datetime.now().month - 1)
+        st.session_state['month'] = month
+    else:
+        month = st.selectbox("Choose the month", list(
+            range(1, 13)), index=st.session_state['month'] - 1)
+        st.session_state['month'] = month
+
+    # Load year from session or set it
     st.write("### Select year:")
-    year = st.selectbox("Choose the year", list(
-        range(2021, 2025)), index=datetime.now().year - 2021)
+    if 'year' not in st.session_state:
+        year = st.selectbox("Choose the year", list(
+            range(2021, 2025)), index=datetime.now().year - 2021)
+        st.session_state['year'] = year
+    else:
+        year = st.selectbox("Choose the year", list(
+            range(2021, 2025)), index=st.session_state['year'] - 2021)
+        st.session_state['year'] = year
 
     try:
         events = get_events(service, calendar_id, month, year)
+        st.session_state['cal_events'] = events
         if not events:
             st.write("No lessons found in this month.")
         else:
