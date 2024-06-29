@@ -7,15 +7,17 @@ from utils.gc_calendar import (authenticate_google_calendar,
 from utils.events_processing import save_lessons_to_df
 import os
 
+
 st.set_page_config(
     page_title="Lessons counter",
     page_icon=":calendar:",
     layout="wide",
     initial_sidebar_state="expanded",
 )
-col1, col2 = st.columns(2)
 
+col1, col2 = st.columns(2)
 with col1:
+    st.write(os.listdir())
     if 'credentials.json' not in os.listdir():
         st.error(
             "Nie znaleziono pliku credentials.json! "

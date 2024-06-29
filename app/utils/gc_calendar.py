@@ -5,6 +5,7 @@ import os.path
 import pickle
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
+import streamlit as st
 
 
 def authenticate_google_calendar():
@@ -14,6 +15,7 @@ def authenticate_google_calendar():
     Returns:
         ""service"" (obj): Google Calendar service object.
     """
+    st.write('Authenticating Google Calendar...')
     SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
     creds = None
     if os.path.exists('token.pickle'):
@@ -25,8 +27,15 @@ def authenticate_google_calendar():
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 'credentials.json', SCOPES)
-            flow.redirect_uri = 'http://localhost:8080/'
-            creds = flow.run_local_server(port=8080)
+            flow.redirect_uri = 'http://localhost:8501/'
+            st.write(
+                "Open the following URL in your browser "
+                "and paste the authorization code below:")
+            auth_url, _ = flow.authorization_url(prompt='consent')
+            st.write(auth_url)
+            auth_code = st.text_input('Authorization Code')
+            if auth_code:
+                creds = flow.fetch_token(code=auth_code)
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
     service = build('calendar', 'v3', credentials=creds)
@@ -44,7 +53,7 @@ def get_events(service, calendar_id, month, year):
     Returns:
         ''events'' (list): List of events in a given month and year.
     """
-    print(f'Getting events for {month}/{year}, calendar: {calendar_id}')
+    st.write('Fetching events from Google Calendar...')
     start_date = datetime(year, month, 1)
     end_date = start_date + timedelta(days=31)
     end_date = end_date.replace(day=1)
@@ -69,6 +78,7 @@ def list_calendars(service):
     Returns:
         ''calendarts_list'' (list): List of calendars.
     """
+    st.write('Fetching calendars from Google Calendar...')
     calendars_result = service.calendarList().list().execute()
     calendars = calendars_result.get('items', [])
 
