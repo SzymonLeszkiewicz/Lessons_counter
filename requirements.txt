@@ -30,7 +30,7 @@ numpy==1.26.4
 oauthlib==3.2.2
 packaging==24.1
 pandas==2.2.2
-pillow==10.3.0
+pillow==13.0.0
 platformdirs==4.2.2
 pre-commit==3.7.1
 proto-plus==1.23.0
